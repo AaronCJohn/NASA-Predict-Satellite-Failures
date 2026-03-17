@@ -2,15 +2,15 @@
 ## End-to-End RUL Prediction for Turbofan Engines
 
 A **production-grade predictive maintenance system** that demonstrates:
-- ✅ Physics-informed feature engineering
-- ✅ Baseline → Advanced deep learning progression
-- ✅ Uncertainty quantification & risk assessment
-- ✅ Deployment-ready API
-- ✅ Industry-level interpretability
+-  Physics-informed feature engineering
+-  Baseline → Advanced deep learning progression
+-  Uncertainty quantification & risk assessment
+-  Deployment-ready API
+-  Industry-level interpretability
 
 ---
 
-## 🎯 Project Overview
+##  Project Overview
 
 ### What Problem Are We Solving?
 **Remaining Useful Life (RUL) Prediction**: Given historical sensor data from a turbofan engine, predict how many cycles it will operate before failure.
@@ -62,7 +62,7 @@ predict_satellite_failures/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Installation
 
@@ -109,7 +109,7 @@ This trains all models and saves results to `models/`
 
 ---
 
-## 🔧 Core Components
+##  Core Components
 
 ### 1. Data Loading (`src/data_loader.py`)
 ```python
@@ -226,7 +226,7 @@ curl -X POST http://localhost:8000/predict \
 
 ---
 
-## 📈 Model Architecture
+##  Model Architecture
 
 ### LSTM
 ```
@@ -258,32 +258,32 @@ Dense(1)  [RUL prediction]
 
 ---
 
-## 💡 What Makes This Production-Grade?
+## What Makes This Production-Grade?
 
-### ✅ Data Handling
+### Data Handling
 - Proper train/val/test splits (no data leakage)
 - Normalization using training statistics
 - Temporal sequence integrity preserved
 
-### ✅ Modeling
+### Modeling
 - Baseline comparison (justifies advanced models)
 - Multiple architectures tested
 - Hyperparameter tuning
 - Early stopping to prevent overfitting
 
-### ✅ Evaluation
+### Evaluation
 - Multiple metrics (RMSE, MAE, R²)
 - Residual analysis (systematic errors?)
 - Prediction intervals (confidence?)
 - Risk stratification (actionability?)
 
-### ✅ Deployment
+### Deployment
 - FastAPI REST endpoints
 - Model versioning
 - Uncertainty quantification
 - Interpretability analysis
 
-### ✅ Documentation
+### Documentation
 - Clear module structure
 - Comprehensive notebooks
 - Configuration management
@@ -291,7 +291,7 @@ Dense(1)  [RUL prediction]
 
 ---
 
-## 🎓 Learning Objectives
+##  Learning Objectives
 
 By working through this project, you'll understand:
 
@@ -317,7 +317,7 @@ By working through this project, you'll understand:
 
 ---
 
-## 🔬 Advanced Extensions
+## Advanced Extensions
 
 ### 1. Cross-Dataset Generalization
 ```python
@@ -347,17 +347,14 @@ Predict RUL + sensor health + failure mode simultaneously
 
 ---
 
-## 📝 Resume Impact
+## Resume Impact
 
-### ❌ Standard Project Description
-"Trained an LSTM model on NASA C-MAPSS dataset"
-
-### ✅ Your Project Description
+### Project Description
 "Developed end-to-end predictive maintenance system with physics-informed feature engineering achieving [11.2] RMSE on NASA C-MAPSS data. Implemented attention-enhanced LSTM (5-10% improvement over baseline) with Bayesian uncertainty estimation and risk stratification for maintenance decision-making. Deployed production-grade FastAPI inference service incorporating feature importance analysis and calibration checks."
 
 ---
 
-## 🛠️ Dependencies
+## Dependencies
 
 ```
 tensorflow>=2.11.0
@@ -379,7 +376,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📚 References
+##  References
 
 **Key Papers:**
 - [C-MAPSS Dataset Paper](https://scholar.google.com/scholar?q=NASA+C-MAPSS+dataset)
@@ -393,7 +390,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 This is a portfolio project demonstrating ML engineering best practices. Feel free to:
 - Extend with additional failure modes
@@ -403,16 +400,16 @@ This is a portfolio project demonstrating ML engineering best practices. Feel fr
 
 ---
 
-## 📞 Questions?
+##  Questions?
 
 This project demonstrates:
-- ✅ Data engineering (cleaning, preprocessing, sequences)
-- ✅ ML fundamentals (baselines, evaluation, metrics)
-- ✅ Deep learning (LSTM, attention, uncertainty)
-- ✅ Production ML (API, deployment, monitoring)
-- ✅ Communication (clear structure, documentation)
+-  Data engineering (cleaning, preprocessing, sequences)
+-  ML fundamentals (baselines, evaluation, metrics)
+-  Deep learning (LSTM, attention, uncertainty)
+-  Production ML (API, deployment, monitoring)
+-  Communication (clear structure, documentation)
 
-**Perfect interview project.** 🚀
+**Perfect interview project.** 
 
 ---
 
@@ -423,7 +420,3 @@ Code is provided as educational material.
 
 ---
 
-## Last Updated
-January 2025
-
-Made with ❤️ for ML engineers who care about doing it right.
