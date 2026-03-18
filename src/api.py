@@ -8,9 +8,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import numpy as np
-import tensorflow as tf
 import logging
 from datetime import datetime
+import torch
+
+from src.models import RULModels, get_torch_device
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +69,9 @@ class DeploymentAPI:
             scaler_path: Path to saved scaler
             model_version: Version string for tracking
         """
-        self.model = tf.keras.models.load_model(model_path)
+        self.device = get_torch_device()
+        self.model = RULModels.load_model(model_path, map_location=self.device).to(self.device)
+        self.model.eval()
         self.scaler = self._load_scaler(scaler_path)
         self.model_version = model_version
         logger.info(f"Model loaded: {model_path}")
@@ -111,20 +115,26 @@ class DeploymentAPI:
         # Preprocess
         readings = self.preprocess_input(readings)
         readings = np.expand_dims(readings, 0)  # Add batch dimension
+        readings_tensor = torch.from_numpy(readings.astype(np.float32)).to(self.device)
         
         if use_mc_dropout:
             # MC Dropout predictions
             predictions = []
+            self.model.train()
             for _ in range(n_iterations):
-                pred = self.model(readings, training=True).numpy().flatten()
+                with torch.no_grad():
+                    pred = self.model(readings_tensor).cpu().numpy().flatten()
                 predictions.append(pred)
             predictions = np.array(predictions)
+            self.model.eval()
             
             mean_pred = np.mean(predictions, axis=0)[0]
             std_pred = np.std(predictions, axis=0)[0]
         else:
             # Point prediction
-            mean_pred = self.model.predict(readings, verbose=0)[0, 0]
+            self.model.eval()
+            with torch.no_grad():
+                mean_pred = self.model(readings_tensor).cpu().numpy()[0]
             std_pred = 0.1 * mean_pred  # Approximate uncertainty
         
         return {

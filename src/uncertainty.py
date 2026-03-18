@@ -57,22 +57,26 @@ class UncertaintyEstimation:
         Performs multiple forward passes with dropout enabled
         
         Args:
-            model: Keras model
+            model: PyTorch model
             X_test: Test data
             n_iterations: Number of forward passes
             
         Returns:
             Dictionary with mean, std, and percentiles
         """
-        import tensorflow as tf
-        
-        # Get original dropout rate
+        import torch
+
+        device = next(model.parameters()).device
+        X_tensor = torch.from_numpy(X_test.astype(np.float32)).to(device)
         predictions = []
-        
+
+        model.train()
         for _ in range(n_iterations):
-            # Forward pass with dropout enabled (training=True)
-            pred = model(X_test, training=True)
-            predictions.append(pred.numpy().flatten())
+            with torch.no_grad():
+                pred = model(X_tensor)
+            predictions.append(pred.cpu().numpy().flatten())
+
+        model.eval()
         
         predictions = np.array(predictions)
         

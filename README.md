@@ -357,7 +357,7 @@ Predict RUL + sensor health + failure mode simultaneously
 ## Dependencies
 
 ```
-tensorflow>=2.11.0
+torch>=2.2.0
 numpy>=1.21.0
 pandas>=1.3.0
 scikit-learn>=1.0.0
@@ -419,4 +419,3 @@ This project uses the publicly available NASA C-MAPSS dataset.
 Code is provided as educational material.
 
 ---
-

@@ -7,10 +7,10 @@ import os
 import sys
 import logging
 import numpy as np
-import tensorflow as tf
 from pathlib import Path
 import joblib
 from typing import Dict
+import torch
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -66,7 +66,9 @@ class RULPipeline:
         
         # Set random seeds
         np.random.seed(self.config.random_seed)
-        tf.random.set_seed(self.config.random_seed)
+        torch.manual_seed(self.config.random_seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(self.config.random_seed)
         
         # 1. Load and preprocess data
         logger.info("STEP 1: Data Loading and Preprocessing")
@@ -270,11 +272,11 @@ class RULPipeline:
         scaler = data_dict['scaler']
         
         model_dir = Path(self.config.model_save_dir)
-        model_path = model_dir / f"attention_lstm_{dataset_name}.h5"
+        model_path = model_dir / f"attention_lstm_{dataset_name}.pt"
         scaler_path = model_dir / f"scaler_{dataset_name}.pkl"
         
         # Save model
-        model.save(str(model_path))
+        RULModels.save_model(model, str(model_path))
         logger.info(f"Model saved: {model_path}")
         
         # Save scaler
