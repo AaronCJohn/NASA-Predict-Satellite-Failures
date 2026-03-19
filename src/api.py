@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 import torch
 
+from src.features import PhysicsInformedFeatures
 from src.models import RULModels, get_torch_device
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,8 @@ class DeploymentAPI:
         self.model.eval()
         self.scaler = self._load_scaler(scaler_path)
         self.model_version = model_version
+        self.raw_feature_count = getattr(self.scaler, "n_features_in_", None)
+        self.model_feature_count = getattr(self.model, "input_shape", (None, None))[1]
         logger.info(f"Model loaded: {model_path}")
     
     @staticmethod
@@ -90,13 +93,35 @@ class DeploymentAPI:
             readings: (sequence_length, n_features)
             
         Returns:
-            Normalized readings
+            Model-ready readings
         """
-        # Normalize using training statistics
+        readings = np.asarray(readings)
+        if readings.ndim != 2:
+            raise ValueError(
+                f"Expected 2D input of shape (sequence_length, n_features), got {readings.shape}."
+            )
+
         n_steps, n_features = readings.shape
+
+        if n_features == self.model_feature_count:
+            return readings
+
+        if n_features != self.raw_feature_count:
+            raise ValueError(
+                f"Input has {n_features} features, but API expects either "
+                f"{self.raw_feature_count} raw features or {self.model_feature_count} model features."
+            )
+
+        # Normalize raw sensor readings using training statistics.
         readings_flat = readings.reshape(-1, n_features)
-        readings_scaled = self.scaler.transform(readings_flat)
-        return readings_scaled.reshape(n_steps, n_features)
+        readings_scaled = self.scaler.transform(readings_flat).reshape(n_steps, n_features)
+
+        # Expand normalized raw features into the engineered feature layout used at training time.
+        engineered = PhysicsInformedFeatures.aggregate_features(
+            np.expand_dims(readings_scaled, axis=0),
+            include_physics=True,
+        )[0]
+        return engineered
     
     def predict_with_uncertainty(self, readings: np.ndarray, 
                                 use_mc_dropout: bool = True,

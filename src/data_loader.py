@@ -65,13 +65,23 @@ class CMAPSSDataLoader:
         
         return train_data, test_data, rul_values
     
-    def prepare_sequences(self, data: pd.DataFrame, sequence_length: int = 30) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def prepare_sequences(
+        self,
+        data: pd.DataFrame,
+        sequence_length: int = 30,
+        rul_offsets: np.ndarray | None = None,
+        max_rul: int | None = None,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Create sliding window sequences from time series data
         
         Args:
             data: DataFrame with engine data
             sequence_length: Number of timesteps in each sequence
+            rul_offsets: Optional per-engine RUL offsets for truncated sequences.
+                For the NASA test split, this should be the provided final RUL for
+                each engine from `RUL_FD00X.txt`.
+            max_rul: Optional upper bound used to clip large RUL targets.
             
         Returns:
             X (sequences), y (RUL labels), engine_ids
@@ -79,17 +89,25 @@ class CMAPSSDataLoader:
         X, y, engine_ids_list = [], [], []
         
         engines = data['engine_id'].unique()
+        if rul_offsets is not None and len(rul_offsets) != len(engines):
+            raise ValueError(
+                f"Expected {len(engines)} RUL offsets, got {len(rul_offsets)}."
+            )
         
-        for engine_id in engines:
+        for engine_idx, engine_id in enumerate(engines):
             engine_data = data[data['engine_id'] == engine_id].reset_index(drop=True)
             
             # Get RUL (Remaining Useful Life)
             total_cycles = len(engine_data)
+            rul_offset = int(rul_offsets[engine_idx]) if rul_offsets is not None else 0
             
             # Create sequences
             for i in range(len(engine_data) - sequence_length + 1):
                 seq = engine_data.iloc[i:i + sequence_length][self.OPERATING_CONDITION_COLUMNS + self.SENSOR_COLUMNS].values
-                rul = max(0, total_cycles - i - sequence_length)  # RUL at end of sequence
+                observed_remaining = total_cycles - i - sequence_length
+                rul = max(0, observed_remaining + rul_offset)  # RUL at end of sequence
+                if max_rul is not None:
+                    rul = min(rul, max_rul)
                 
                 X.append(seq)
                 y.append(rul)
@@ -122,13 +140,19 @@ class CMAPSSDataLoader:
         
         return X_train_scaled, X_test_scaled, scaler
     
-    def process_complete_pipeline(self, dataset_name: str, sequence_length: int = 30) -> Dict:
+    def process_complete_pipeline(
+        self,
+        dataset_name: str,
+        sequence_length: int = 30,
+        max_rul: int | None = None,
+    ) -> Dict:
         """
         Complete data processing pipeline
         
         Args:
             dataset_name: Dataset to load
             sequence_length: Sequence length for windows
+            max_rul: Optional upper bound used to clip train/test RUL targets
             
         Returns:
             Dictionary with processed data
@@ -137,8 +161,17 @@ class CMAPSSDataLoader:
         train_data, test_data, rul_values = self.load_dataset(dataset_name)
         
         # Create sequences
-        X_train, y_train, engine_train = self.prepare_sequences(train_data, sequence_length)
-        X_test, y_test, engine_test = self.prepare_sequences(test_data, sequence_length)
+        X_train, y_train, engine_train = self.prepare_sequences(
+            train_data,
+            sequence_length,
+            max_rul=max_rul,
+        )
+        X_test, y_test, engine_test = self.prepare_sequences(
+            test_data,
+            sequence_length,
+            rul_offsets=rul_values,
+            max_rul=max_rul,
+        )
         
         # Normalize
         X_train, X_test, scaler = self.normalize_data(X_train, X_test)
