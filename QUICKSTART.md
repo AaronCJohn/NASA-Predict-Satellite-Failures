@@ -47,9 +47,9 @@ Shows fundamentals before advancing:
 ### ✅ Advanced Models
 Industry-standard architectures:
 - **LSTM**: Captures temporal dependencies
-- **Attention LSTM**: Learns important timesteps (5-10% improvement)
+- **Attention LSTM**: Learns important timesteps and improves interpretability
 
-**Impact**: State-of-the-art performance with interpretability
+**Impact**: Strong temporal modeling with an interpretable variant to compare against vanilla LSTM
 
 ### ✅ Uncertainty Quantification
 Real-world constraint - predictions need confidence:
@@ -103,13 +103,13 @@ uvicorn api:create_api --reload
 ### Model Performance
 ```
 Baseline:
-  Linear Regression: RMSE=24.5, MAE=19.8, R²=0.45
-  Random Forest:     RMSE=17.8, MAE=13.5, R²=0.68
-  Simple MLP:        RMSE=15.9, MAE=11.7, R²=0.75
+  Linear Regression: RMSE=17.0, MAE=13.8, R²=0.67
+  Random Forest:     RMSE=18.2, MAE=14.6, R²=0.63
+  Simple MLP:        RMSE=15.3, MAE=12.1, R²=0.73
 
 Deep Learning:
-  LSTM:              RMSE=12.8, MAE=9.6, R²=0.82
-  Attention LSTM:    RMSE=11.2, MAE=8.3, R²=0.85 ✨
+  LSTM:              RMSE=14.4, MAE=10.9, R²=0.77
+  Attention LSTM:    RMSE=15.7, MAE=12.0, R²=0.72
 ```
 
 ### Uncertainty Metrics
@@ -175,7 +175,7 @@ risk = UncertaintyEstimation.risk_assessment(y_pred, std_pred)
 
 ### api.py
 ```python
-api = DeploymentAPI('model.h5', 'scaler.pkl')
+api = DeploymentAPI('attention_lstm_FD001.pt', 'scaler_FD001.pkl')
 prediction = api.predict_with_uncertainty(readings)
 # → point_estimate, std, lower_95, upper_95
 
@@ -194,7 +194,7 @@ prediction = api.predict_with_uncertainty(readings)
 > Shows progression from fundamentals to advanced.
 
 **"Why attention?"**
-> Learns which timesteps matter. 5-10% RMSE improvement. Interpretable - we see where model focuses.
+> Learns which timesteps matter. In this repo it improved interpretability, but the plain LSTM achieved the best FD001 metrics in the current run.
 
 **"How do you handle uncertainty?"**
 > Predict intervals from residuals. Confidence scores. Risk-based maintenance decisions. Real systems need this.

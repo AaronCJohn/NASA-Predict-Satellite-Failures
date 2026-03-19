@@ -328,5 +328,5 @@ if __name__ == "__main__":
     import uvicorn
     
     # Example: uvicorn app:app --reload
-    app = create_api("models/best_model.h5", "models/scaler.pkl")
+    app = create_api("models/attention_lstm_FD001.pt", "models/scaler_FD001.pkl")
     uvicorn.run(app, host="0.0.0.0", port=8000)

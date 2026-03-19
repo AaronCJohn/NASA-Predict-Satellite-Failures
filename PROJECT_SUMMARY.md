@@ -10,9 +10,9 @@ You now have a **complete, deployable predictive maintenance system** that demon
 
 ### Core Modules (Production-Ready)
 ✅ `src/data_loader.py` — Handles temporal data correctly (no leakage)
-✅ `src/features.py` — Physics-informed features (5-10% improvement for free)
+✅ `src/features.py` — Physics-informed features for richer temporal signals
 ✅ `src/baselines.py` — Shows fundamentals (Linear, RF, MLP)
-✅ `src/models.py` — LSTM + Attention LSTM (state-of-the-art)
+✅ `src/models.py` — LSTM + Attention LSTM comparison
 ✅ `src/uncertainty.py` — Bayesian confidence intervals
 ✅ `src/api.py` — FastAPI deployment endpoints
 
@@ -46,11 +46,10 @@ Instead of just raw sensors:
 Shows you understand **why** each model level adds value.
 
 ### 3. **Attention Mechanism** 🔥
-Most students stop at LSTM. You went further:
+Most students stop at LSTM. You evaluated an interpretable extension:
 - Learns which timesteps matter
-- 5-10% performance improvement
 - Enables interpretability ("look, the model focuses here")
-- Research-level architecture
+- Research-level architecture to compare against vanilla LSTM
 
 ### 4. **Uncertainty Quantification**
 95% of projects skip this. You included:
@@ -121,8 +120,8 @@ uvicorn api:create_api --reload
 > Key components:
 > - Physics-informed features (degradation rates, health indicators)
 > - Baseline models showing fundamentals (Linear, RF, MLP)
-> - LSTM capturing temporal patterns
-> - **Attention mechanism** learning important timesteps (5-10% RMSE improvement)
+> - LSTM capturing temporal patterns and giving the best current FD001 metrics
+> - **Attention mechanism** evaluated for interpretability, though it did not beat the vanilla LSTM in the current run
 > - Bayesian uncertainty quantification for risk-aware decisions
 > - FastAPI deployment service
 >
@@ -140,7 +139,7 @@ uvicorn api:create_api --reload
 > - Multi-task learning (RUL + sensor health + failure mode)
 
 ### "Why attention over vanilla LSTM?"
-> Improved performance by 5-10% on RMSE. But more importantly—it's interpretable. We can visualize attention weights to see which timesteps the model focuses on. In production, interpretability builds trust.
+> In this project, attention was more useful for interpretability than raw performance. The plain LSTM produced the best current FD001 metrics, but the attention model still helped show which timesteps mattered. In production, that interpretability can still be valuable.
 
 ---
 
@@ -150,11 +149,11 @@ uvicorn api:create_api --reload
 ```
 Model                RMSE      MAE       R²
 ─────────────────────────────────────────
-Linear Regression    24.5      19.8      0.45
-Random Forest        17.8      13.5      0.68
-Simple MLP           15.9      11.7      0.75
-LSTM                 12.8      9.6       0.82
-Attention LSTM ✨    11.2      8.3       0.85
+Linear Regression    17.0      13.8      0.67
+Random Forest        18.2      14.6      0.63
+Simple MLP           15.3      12.1      0.73
+LSTM                 14.4      10.9      0.77
+Attention LSTM       15.7      12.0      0.72
 ```
 
 ### Uncertainty Metrics
@@ -206,7 +205,7 @@ src/
 │
 ├── models.py (350 lines)
 │   Purpose: LSTM and Attention LSTM architectures
-│   Key: State-of-the-art, well-documented
+│   Key: Vanilla-vs-attention comparison with interpretable sequence modeling
 │
 ├── uncertainty.py (300 lines)
 │   Purpose: Uncertainty quantification
@@ -235,7 +234,7 @@ train.py (350 lines)
 
 ## 💼 Resume Bullet Point
 
-> **Developed end-to-end predictive maintenance system for turbofan engines using NASA C-MAPSS dataset, incorporating physics-informed feature engineering and attention-enhanced LSTM achieving 11.2 RMSE. Implemented Bayesian uncertainty quantification with prediction intervals and risk-based maintenance decision framework. Deployed production-grade FastAPI inference service with model versioning and calibration analysis.**
+> **Developed end-to-end predictive maintenance system for turbofan engines using NASA C-MAPSS dataset, incorporating physics-informed feature engineering and benchmarking baseline, LSTM, and attention-based sequence models. The best current FD001 run was a vanilla LSTM at roughly 14.4 RMSE. Implemented Bayesian-style uncertainty quantification, risk-based maintenance decision support, and a production-grade FastAPI inference service.**
 
 ---
 

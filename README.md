@@ -96,11 +96,11 @@ This trains all models and saves results to `models/`
 ### Model Comparison
 | Model | RMSE | MAE | R² |
 |-------|------|-----|-----|
-| Linear Regression | ~25 | ~20 | 0.45 |
-| Random Forest | ~18 | ~14 | 0.68 |
-| Simple MLP | ~16 | ~12 | 0.75 |
-| LSTM | ~13 | ~10 | 0.82 |
-| **Attention LSTM** | **~11** | **~8** | **0.85** |
+| Linear Regression | ~17 | ~14 | 0.67 |
+| Random Forest | ~18 | ~15 | 0.63 |
+| Simple MLP | ~15 | ~12 | 0.73 |
+| **LSTM** | **~14.4** | **~10.9** | **0.77** |
+| Attention LSTM | ~15.7 | ~12.0 | 0.72 |
 
 ### Uncertainty Quantification
 - 95% prediction intervals: ±12 cycles (mean)
@@ -167,15 +167,15 @@ from models import RULModels
 lstm_model = RULModels.build_lstm(input_shape, lstm_units=64, dropout=0.2)
 ```
 
-#### Attention LSTM (The Differentiator)
+#### Attention LSTM (Interpretability Variant)
 ```python
 attention_model = RULModels.build_attention_lstm(input_shape, lstm_units=64, dropout=0.2)
 ```
 
-**Attention Benefits:**
+**Attention Role In This Repo:**
 - Learns which timesteps matter (interpretability)
-- Typically 5-10% better RMSE
 - Enables visualization of model focus
+- Was tested against vanilla LSTM, but did not outperform it in the current FD001 run
 
 ---
 
@@ -241,7 +241,7 @@ Dense(32, ReLU)
 Dense(1)  [RUL prediction]
 ```
 
-### Attention LSTM (Recommended)
+### Attention LSTM
 ```
 Input (30 timesteps, 105 features)
     ↓
@@ -350,7 +350,7 @@ Predict RUL + sensor health + failure mode simultaneously
 ## Resume Impact
 
 ### Project Description
-"Developed end-to-end predictive maintenance system with physics-informed feature engineering achieving [11.2] RMSE on NASA C-MAPSS data. Implemented attention-enhanced LSTM (5-10% improvement over baseline) with Bayesian uncertainty estimation and risk stratification for maintenance decision-making. Deployed production-grade FastAPI inference service incorporating feature importance analysis and calibration checks."
+"Developed end-to-end predictive maintenance system with physics-informed feature engineering on NASA C-MAPSS data. Benchmarked linear, tree-based, MLP, LSTM, and attention-based sequence models; the best current run was a vanilla LSTM at roughly 14.4 RMSE. Added Bayesian-style uncertainty estimation, risk stratification, feature-importance analysis, and a production-grade FastAPI inference service."
 
 ---
 

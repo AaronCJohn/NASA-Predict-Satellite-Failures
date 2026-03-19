@@ -46,6 +46,8 @@ class AttentionLayer(nn.Module):
 class LSTMRegressor(nn.Module):
     def __init__(self, input_size: int, lstm_units: int = 64, dropout: float = 0.2):
         super().__init__()
+        self.lstm_units = lstm_units
+        self.dropout_rate = dropout
         self.lstm1 = nn.LSTM(input_size, lstm_units, batch_first=True)
         self.dropout1 = nn.Dropout(dropout)
         self.lstm2 = nn.LSTM(lstm_units, lstm_units // 2, batch_first=True)
@@ -70,6 +72,8 @@ class LSTMRegressor(nn.Module):
 class AttentionLSTMRegressor(nn.Module):
     def __init__(self, input_size: int, lstm_units: int = 64, dropout: float = 0.2):
         super().__init__()
+        self.lstm_units = lstm_units
+        self.dropout_rate = dropout
         self.lstm1 = nn.LSTM(input_size, lstm_units, batch_first=True)
         self.dropout1 = nn.Dropout(dropout)
         self.lstm2 = nn.LSTM(lstm_units, lstm_units // 2, batch_first=True)
@@ -97,6 +101,7 @@ class AttentionLSTMRegressor(nn.Module):
 class CNNLSTMRegressor(nn.Module):
     def __init__(self, input_size: int, dropout: float = 0.2):
         super().__init__()
+        self.dropout_rate = dropout
         self.conv = nn.Sequential(
             nn.Conv1d(input_size, 32, kernel_size=3, padding=1),
             nn.ReLU(),
@@ -159,6 +164,8 @@ class RULModels:
         batch_size: int = 32,
         early_stopping: bool = True,
         learning_rate: float = 1e-3,
+        weight_decay: float = 0.0,
+        grad_clip_norm: Optional[float] = None,
     ) -> Dict:
         device = get_torch_device()
         model = model.to(device)
@@ -174,7 +181,7 @@ class RULModels:
             shuffle=False,
         )
 
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         criterion = nn.MSELoss()
         patience = 10 if early_stopping else epochs
 
@@ -196,6 +203,8 @@ class RULModels:
                 predictions = model(features)
                 loss = criterion(predictions, targets)
                 loss.backward()
+                if grad_clip_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
                 optimizer.step()
 
                 train_losses.append(loss.item())
@@ -322,6 +331,10 @@ class RULModels:
         checkpoint = {
             "model_type": getattr(model, "model_name", model.__class__.__name__.lower()),
             "input_shape": getattr(model, "input_shape", None),
+            "model_kwargs": {
+                "lstm_units": getattr(model, "lstm_units", None),
+                "dropout": getattr(model, "dropout_rate", None),
+            },
             "state_dict": model.state_dict(),
         }
         torch.save(checkpoint, model_path)
@@ -331,12 +344,17 @@ class RULModels:
         checkpoint = torch.load(model_path, map_location=map_location or get_torch_device())
         model_type = checkpoint["model_type"]
         input_shape = tuple(checkpoint["input_shape"])
+        model_kwargs = {
+            key: value
+            for key, value in checkpoint.get("model_kwargs", {}).items()
+            if value is not None
+        }
         if model_type == "lstm":
-            model = RULModels.build_lstm(input_shape)
+            model = RULModels.build_lstm(input_shape, **model_kwargs)
         elif model_type == "attention_lstm":
-            model = RULModels.build_attention_lstm(input_shape)
+            model = RULModels.build_attention_lstm(input_shape, **model_kwargs)
         elif model_type == "cnn_lstm":
-            model = RULModels.build_cnn_lstm(input_shape)
+            model = RULModels.build_cnn_lstm(input_shape, **model_kwargs)
         else:
             raise ValueError(f"Unsupported model type in checkpoint: {model_type}")
 
